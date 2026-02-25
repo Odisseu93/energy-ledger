@@ -19,9 +19,11 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src/infrastructure/database/prisma ./src/infrastructure/database/prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 
 RUN mkdir -p uploads
 
 EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy --schema=src/infrastructure/database/prisma/schema.prisma && node dist/server.js"]
