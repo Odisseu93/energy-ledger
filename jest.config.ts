@@ -29,7 +29,7 @@ const config: Config = {
   },
   coverageDirectory: 'coverage',
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json', isolatedModules: true }],
   },
 };
 
