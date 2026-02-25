@@ -1,0 +1,183 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-02-24T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app",
+  "resources": [
+    {
+      "_id": "wrk_energy_ledger",
+      "_type": "workspace",
+      "name": "EnergyLedger – Energy Invoice API",
+      "description": "RESTful API for processing energy invoices via Google Gemini LLM",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_energy_ledger_base",
+      "_type": "environment",
+      "parentId": "wrk_energy_ledger",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "customer_number": "7202210726",
+        "reference_month": "SET/2024"
+      }
+    },
+
+    {
+      "_id": "fld_health",
+      "_type": "request_group",
+      "parentId": "wrk_energy_ledger",
+      "name": "Health"
+    },
+    {
+      "_id": "req_health_check",
+      "_type": "request",
+      "parentId": "fld_health",
+      "name": "Health Check",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "headers": [],
+      "body": {}
+    },
+
+    {
+      "_id": "fld_invoices",
+      "_type": "request_group",
+      "parentId": "wrk_energy_ledger",
+      "name": "Invoices"
+    },
+    {
+      "_id": "req_invoice_upload",
+      "_type": "request",
+      "parentId": "fld_invoices",
+      "name": "Upload Invoice (PDF)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/api/v1/invoices/upload",
+      "headers": [],
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "id": "pair_invoice_file",
+            "name": "invoice",
+            "value": "",
+            "type": "file",
+            "fileName": "",
+            "description": "PDF invoice file (max 10 MB)"
+          }
+        ]
+      },
+      "description": "Upload a PDF invoice. The file is sent to Google Gemini for data extraction, derived metrics are calculated and the result is persisted."
+    },
+    {
+      "_id": "req_invoice_list",
+      "_type": "request",
+      "parentId": "fld_invoices",
+      "name": "List Invoices",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/invoices",
+      "headers": [],
+      "parameters": [
+        { "id": "p1", "name": "customer_number", "value": "", "disabled": true },
+        { "id": "p2", "name": "reference_month", "value": "", "disabled": true },
+        { "id": "p3", "name": "page", "value": "1", "disabled": false },
+        { "id": "p4", "name": "limit", "value": "20", "disabled": false }
+      ],
+      "body": {},
+      "description": "Returns a paginated list of invoices. All query params are optional."
+    },
+    {
+      "_id": "req_invoice_list_filtered",
+      "_type": "request",
+      "parentId": "fld_invoices",
+      "name": "List Invoices (filtered by customer)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/invoices",
+      "headers": [],
+      "parameters": [
+        { "id": "p1", "name": "customer_number", "value": "{{ _.customer_number }}", "disabled": false },
+        { "id": "p2", "name": "reference_month", "value": "", "disabled": true },
+        { "id": "p3", "name": "page", "value": "1", "disabled": false },
+        { "id": "p4", "name": "limit", "value": "20", "disabled": false }
+      ],
+      "body": {},
+      "description": "List invoices filtered by customer_number using the base environment variable."
+    },
+    {
+      "_id": "req_invoice_list_by_month",
+      "_type": "request",
+      "parentId": "fld_invoices",
+      "name": "List Invoices (filtered by month)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/invoices",
+      "headers": [],
+      "parameters": [
+        { "id": "p1", "name": "customer_number", "value": "", "disabled": true },
+        { "id": "p2", "name": "reference_month", "value": "{{ _.reference_month }}", "disabled": false },
+        { "id": "p3", "name": "page", "value": "1", "disabled": false },
+        { "id": "p4", "name": "limit", "value": "20", "disabled": false }
+      ],
+      "body": {},
+      "description": "List invoices filtered by reference_month (format: MMM/YYYY e.g. SET/2024)."
+    },
+
+    {
+      "_id": "fld_dashboard",
+      "_type": "request_group",
+      "parentId": "wrk_energy_ledger",
+      "name": "Dashboard"
+    },
+    {
+      "_id": "req_dashboard_energy_all",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Energy Dashboard (all customers)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/dashboard/energy",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "description": "Returns energy consumption (kWh) and compensated energy grouped by reference month — all customers."
+    },
+    {
+      "_id": "req_dashboard_energy_customer",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Energy Dashboard (by customer)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/dashboard/energy",
+      "headers": [],
+      "parameters": [
+        { "id": "p1", "name": "customer_number", "value": "{{ _.customer_number }}", "disabled": false }
+      ],
+      "body": {},
+      "description": "Returns energy dashboard data filtered by customer_number."
+    },
+    {
+      "_id": "req_dashboard_financial_all",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Financial Dashboard (all customers)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/dashboard/financial",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "description": "Returns financial values (R$) — total without GD and GD savings — grouped by reference month, all customers."
+    },
+    {
+      "_id": "req_dashboard_financial_customer",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Financial Dashboard (by customer)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/api/v1/dashboard/financial",
+      "headers": [],
+      "parameters": [
+        { "id": "p1", "name": "customer_number", "value": "{{ _.customer_number }}", "disabled": false }
+      ],
+      "body": {},
+      "description": "Returns financial dashboard data filtered by customer_number."
+    }
+  ]
+}

@@ -1,0 +1,408 @@
+{
+  "info": {
+    "name": "EnergyLedger – Energy Invoice API",
+    "_postman_id": "energy-ledger-api-v1",
+    "description": "RESTful API for processing energy invoices via Google Gemini LLM.\n\nDocumentation: http://localhost:3000/docs\nSwagger UI: http://localhost:3000/swagger",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL of the API server"
+    },
+    {
+      "key": "customer_number",
+      "value": "7202210726",
+      "type": "string",
+      "description": "Customer number as printed on the invoice"
+    },
+    {
+      "key": "reference_month",
+      "value": "SET/2024",
+      "type": "string",
+      "description": "Reference month in MMM/YYYY format (Portuguese, uppercase)"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica disponibilidade do servidor. Retorna status 200 quando operacional. Útil para health checks de orquestradores (Docker, Kubernetes)."
+          },
+          "response": [
+            {
+              "name": "200 – Serviço operacional",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": \"ok\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "Upload Invoice (PDF)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "invoice",
+                  "type": "file",
+                  "src": "",
+                  "description": "PDF invoice file. Max size: UPLOAD_MAX_SIZE_MB (default 10 MB). Field name must be exactly \"invoice\"."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices", "upload"]
+            },
+            "description": "Recebe um PDF de fatura de energia e executa o pipeline completo:\n1. Validação do arquivo (tipo application/pdf, tamanho máx. UPLOAD_MAX_SIZE_MB)\n2. Extração de dados via Google Gemini 2.5 Flash (3 tentativas com backoff exponencial)\n3. Validação do JSON retornado pelo LLM contra schema Zod\n4. Cálculo dos campos derivados pela InvoiceEntity\n5. Upsert no PostgreSQL pela constraint única (customerNumber, referenceMonth)\n\nIdempotência: reenviar a mesma fatura atualiza o registro existente — não cria duplicata."
+          },
+          "response": [
+            {
+              "name": "201 – Fatura processada",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"a3b4c5d6-e7f8-9012-abcd-ef1234567890\",\n    \"customerId\": \"f1e2d3c4-b5a6-7890-abcd-ef0123456789\",\n    \"customerNumber\": \"7202210726\",\n    \"referenceMonth\": \"SET/2024\",\n    \"electricEnergyKwh\": 50,\n    \"electricEnergyValue\": 38.63,\n    \"sceeeEnergyKwh\": 476,\n    \"sceeeEnergyValue\": 366.28,\n    \"compensatedEnergyKwh\": 476,\n    \"compensatedEnergyValue\": -354.11,\n    \"publicLightingContrib\": 49.43,\n    \"energyConsumptionKwh\": 526,\n    \"totalValueWithoutGd\": 454.34,\n    \"gdSavings\": -354.11,\n    \"fileUrl\": null,\n    \"processedAt\": \"2024-09-15T14:23:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 – Arquivo ausente ou inválido",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"ValidationError\",\n    \"message\": \"PDF file is required\"\n  }\n}"
+            },
+            {
+              "name": "413 – Arquivo excede o limite",
+              "status": "Content Too Large",
+              "code": 413,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"ValidationError\",\n    \"message\": \"File size exceeds the 10MB limit\"\n  }\n}"
+            },
+            {
+              "name": "422 – LLM não reconheceu o PDF",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"LLMParseError\",\n    \"message\": \"Document does not appear to be an energy invoice\"\n  }\n}"
+            },
+            {
+              "name": "502 – Gemini API indisponível",
+              "status": "Bad Gateway",
+              "code": 502,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"LLMError\",\n    \"message\": \"Gemini API failed after 3 attempts: rate limit exceeded\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices"],
+              "query": [
+                {
+                  "key": "customer_number",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filtra por número do cliente. Omita para listar todos."
+                },
+                {
+                  "key": "reference_month",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filtra por mês de referência. Formato: MMM/AAAA (ex: SET/2024). Omita para listar todos os meses."
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false,
+                  "description": "Número da página (mínimo: 1, padrão: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false,
+                  "description": "Registros por página (mínimo: 1, máximo: 100, padrão: 20)"
+                }
+              ]
+            },
+            "description": "Retorna uma lista paginada de faturas processadas. Todos os filtros são opcionais e combináveis."
+          },
+          "response": [
+            {
+              "name": "200 – Lista paginada",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"a3b4c5d6-e7f8-9012-abcd-ef1234567890\",\n      \"customerId\": \"f1e2d3c4-b5a6-7890-abcd-ef0123456789\",\n      \"customerNumber\": \"7202210726\",\n      \"referenceMonth\": \"SET/2024\",\n      \"electricEnergyKwh\": 50,\n      \"electricEnergyValue\": 38.63,\n      \"sceeeEnergyKwh\": 476,\n      \"sceeeEnergyValue\": 366.28,\n      \"compensatedEnergyKwh\": 476,\n      \"compensatedEnergyValue\": -354.11,\n      \"publicLightingContrib\": 49.43,\n      \"energyConsumptionKwh\": 526,\n      \"totalValueWithoutGd\": 454.34,\n      \"gdSavings\": -354.11,\n      \"fileUrl\": null,\n      \"processedAt\": \"2024-09-15T14:23:00.000Z\"\n    }\n  ],\n  \"total\": 12,\n  \"page\": 1,\n  \"limit\": 20\n}"
+            },
+            {
+              "name": "200 – Lista vazia",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [],\n  \"total\": 0,\n  \"page\": 1,\n  \"limit\": 20\n}"
+            },
+            {
+              "name": "400 – Parâmetro inválido",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"ValidationError\",\n    \"message\": \"\\\"page\\\" must be a positive integer\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Invoices (filtered by customer)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices?customer_number={{customer_number}}&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices"],
+              "query": [
+                {
+                  "key": "customer_number",
+                  "value": "{{customer_number}}",
+                  "disabled": false,
+                  "description": "Número do cliente (variável de ambiente)"
+                },
+                {
+                  "key": "reference_month",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filtro de mês desabilitado nesta requisição"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lista faturas filtradas por customer_number usando a variável de coleção."
+          },
+          "response": []
+        },
+        {
+          "name": "List Invoices (filtered by month)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices?reference_month={{reference_month}}&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices"],
+              "query": [
+                {
+                  "key": "customer_number",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filtro de cliente desabilitado nesta requisição"
+                },
+                {
+                  "key": "reference_month",
+                  "value": "{{reference_month}}",
+                  "disabled": false,
+                  "description": "Mês de referência (variável de ambiente)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lista faturas filtradas por reference_month. Formato: MMM/AAAA (ex: SET/2024)."
+          },
+          "response": []
+        },
+        {
+          "name": "List Invoices (customer + month)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/invoices?customer_number={{customer_number}}&reference_month={{reference_month}}&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "invoices"],
+              "query": [
+                {
+                  "key": "customer_number",
+                  "value": "{{customer_number}}",
+                  "disabled": false,
+                  "description": "Número do cliente"
+                },
+                {
+                  "key": "reference_month",
+                  "value": "{{reference_month}}",
+                  "disabled": false,
+                  "description": "Mês de referência"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lista faturas combinando filtro de cliente e mês de referência."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Energy Dashboard (all customers)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/energy",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "energy"]
+            },
+            "description": "Retorna consumo de energia elétrica (kWh) e energia compensada GD (kWh) agrupados por mês de referência — todos os clientes agregados."
+          },
+          "response": [
+            {
+              "name": "200 – Dados agregados",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"customerNumber\": null,\n    \"data\": [\n      { \"referenceMonth\": \"JUL/2024\", \"energyConsumptionKwh\": 1052, \"compensatedEnergyKwh\": 952 },\n      { \"referenceMonth\": \"AGO/2024\", \"energyConsumptionKwh\": 978, \"compensatedEnergyKwh\": 890 },\n      { \"referenceMonth\": \"SET/2024\", \"energyConsumptionKwh\": 526, \"compensatedEnergyKwh\": 476 }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Energy Dashboard (by customer)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/energy?customer_number={{customer_number}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "energy"],
+              "query": [
+                {
+                  "key": "customer_number",
+                  "value": "{{customer_number}}",
+                  "disabled": false,
+                  "description": "Número do cliente para filtrar os dados"
+                }
+              ]
+            },
+            "description": "Retorna dados de consumo de energia filtrados por customer_number."
+          },
+          "response": [
+            {
+              "name": "200 – Dados por cliente",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"customerNumber\": \"7202210726\",\n    \"data\": [\n      { \"referenceMonth\": \"JUL/2024\", \"energyConsumptionKwh\": 520, \"compensatedEnergyKwh\": 476 },\n      { \"referenceMonth\": \"AGO/2024\", \"energyConsumptionKwh\": 498, \"compensatedEnergyKwh\": 445 },\n      { \"referenceMonth\": \"SET/2024\", \"energyConsumptionKwh\": 526, \"compensatedEnergyKwh\": 476 }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Financial Dashboard (all customers)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/financial",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "financial"]
+            },
+            "description": "Retorna valores financeiros em R$ agrupados por mês de referência: valor total sem GD e economia gerada pela Geração Distribuída — todos os clientes agregados."
+          },
+          "response": [
+            {
+              "name": "200 – Dados agregados",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"customerNumber\": null,\n    \"data\": [\n      { \"referenceMonth\": \"JUL/2024\", \"totalValueWithoutGd\": 908.68, \"gdSavings\": -708.22 },\n      { \"referenceMonth\": \"AGO/2024\", \"totalValueWithoutGd\": 872.44, \"gdSavings\": -660.50 },\n      { \"referenceMonth\": \"SET/2024\", \"totalValueWithoutGd\": 454.34, \"gdSavings\": -354.11 }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Financial Dashboard (by customer)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/financial?customer_number={{customer_number}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "dashboard", "financial"],
+              "query": [
+                {
+                  "key": "customer_number",
+                  "value": "{{customer_number}}",
+                  "disabled": false,
+                  "description": "Número do cliente para filtrar os dados"
+                }
+              ]
+            },
+            "description": "Retorna dados financeiros filtrados por customer_number."
+          },
+          "response": [
+            {
+              "name": "200 – Dados por cliente",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"customerNumber\": \"7202210726\",\n    \"data\": [\n      { \"referenceMonth\": \"JUL/2024\", \"totalValueWithoutGd\": 454.34, \"gdSavings\": -354.11 },\n      { \"referenceMonth\": \"AGO/2024\", \"totalValueWithoutGd\": 436.22, \"gdSavings\": -330.25 },\n      { \"referenceMonth\": \"SET/2024\", \"totalValueWithoutGd\": 454.34, \"gdSavings\": -354.11 }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
