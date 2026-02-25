@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.cursor/
+.env
+coverage/
+uploads/
+*.log
+.DS_Store
+prisma/migrations/
+/docs/briefing
+/docs/faturas
+/faturas
+TODO.md
