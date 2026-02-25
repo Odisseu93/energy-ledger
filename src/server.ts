@@ -4,9 +4,8 @@ import { logger } from '@/shared/logger/logger';
 import { prisma } from '@/infrastructure/database/prisma/prisma-client';
 
 async function bootstrap(): Promise<void> {
-  await prisma.$connect();
-  logger.info('Database connection established');
-
+  // Prisma connects lazily on the first query — explicit $connect() is not
+  // required and can cause startup failures on cold Neon free-tier instances.
   const server = app.listen(env.PORT, () => {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, 'Server started');
   });
