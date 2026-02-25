@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: energy_ledger_postgres
+    environment:
+      POSTGRES_USER: energy_ledger
+      POSTGRES_PASSWORD: energy_ledger_secret
+      POSTGRES_DB: energy_ledger_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U energy_ledger -d energy_ledger_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: energy_ledger_api
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://energy_ledger:energy_ledger_secret@postgres:5432/energy_ledger_db
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      PORT: 3000
+      UPLOAD_MAX_SIZE_MB: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
+    command: >
+      sh -c "npx prisma db push --schema=src/infrastructure/database/prisma/schema.prisma --accept-data-loss && node dist/server.js"
+
+volumes:
+  postgres_data:
+  uploads:
