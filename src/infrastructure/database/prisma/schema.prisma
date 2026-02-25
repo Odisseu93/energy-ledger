@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id             String    @id @default(uuid())
+  customerNumber String    @unique @map("customer_number")
+  invoices       Invoice[]
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@map("customers")
+}
+
+model Invoice {
+  id                     String   @id @default(uuid())
+  customerId             String   @map("customer_id")
+  referenceMonth         String   @map("reference_month")
+  electricEnergyKwh      Float    @map("electric_energy_kwh")
+  electricEnergyValue    Float    @map("electric_energy_value")
+  sceeeEnergyKwh         Float    @map("sceee_energy_kwh")
+  sceeeEnergyValue       Float    @map("sceee_energy_value")
+  compensatedEnergyKwh   Float    @map("compensated_energy_kwh")
+  compensatedEnergyValue Float    @map("compensated_energy_value")
+  publicLightingContrib  Float    @map("public_lighting_contrib")
+  energyConsumptionKwh   Float    @map("energy_consumption_kwh")
+  totalValueWithoutGd    Float    @map("total_value_without_gd")
+  gdSavings              Float    @map("gd_savings")
+  fileUrl                String?  @map("file_url")
+  processedAt            DateTime @default(now()) @map("processed_at")
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([customerId, referenceMonth])
+  @@index([customerId])
+  @@index([referenceMonth])
+  @@map("invoices")
+}
