@@ -52,30 +52,12 @@ jobs:
           retention-days: 7
 
   # ─────────────────────────────────────────────
-  # Deploy: runs only on pushes to main after
-  # the quality gate passes.
+  # Deploy: handled by Railway.
+  # Railway deploys automatically on push to main
+  # via GitHub integration (Railway dashboard →
+  # project → Settings → Source). No CI step needed.
   #
-  # Uncomment and configure one of the options
-  # below according to your hosting platform.
+  # Production URL: https://energy-ledger.up.railway.app
+  # Health: https://energy-ledger.up.railway.app/health
+  # Docs:   https://energy-ledger.up.railway.app/docs
   # ─────────────────────────────────────────────
-  # deploy:
-  #   name: Deploy
-  #   needs: quality
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #
-  #     # ── Option A: Render ──────────────────────
-  #     # Add RENDER_DEPLOY_HOOK_URL to repository secrets.
-  #     # (Render dashboard → your service → Settings → Deploy Hook)
-  #     #
-  #     # - name: Trigger Render deploy
-  #     #   run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
-  #
-  #     # ── Option B: Railway ─────────────────────
-  #     # Railway handles deploys automatically via its own GitHub integration.
-  #     # Enable it in the Railway dashboard → project → Settings → Source.
-  #     # No extra step needed here.

@@ -224,9 +224,12 @@ Os campos abaixo **não constam no PDF** — são derivados pela aplicação:
   },
   externalDocs: {
     description: 'Documentação completa com playground interativo → /docs',
-    url: 'http://localhost:3000/docs',
+    url: 'https://energy-ledger.up.railway.app/docs',
   },
-  servers: [{ url: 'http://localhost:3000', description: 'Desenvolvimento local' }],
+  servers: [
+    { url: 'https://energy-ledger.up.railway.app', description: 'Produção (Railway)' },
+    { url: 'http://localhost:3000', description: 'Desenvolvimento local' },
+  ],
   tags: [
     {
       name: 'Faturas',

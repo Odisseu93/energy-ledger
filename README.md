@@ -6,14 +6,16 @@ API RESTful que recebe PDFs de faturas de energia elétrica, extrai dados estrut
 
 ## Documentação
 
-Após subir o projeto, acesse:
+**API em produção (Railway):** [https://energy-ledger.up.railway.app](https://energy-ledger.up.railway.app) — health: [`/health`](https://energy-ledger.up.railway.app/health), docs: [`/docs`](https://energy-ledger.up.railway.app/docs), Swagger: [`/swagger`](https://energy-ledger.up.railway.app/swagger).
+
+Após subir o projeto localmente, acesse:
 
 | URL | Descrição |
 |---|---|
 | [`http://localhost:3000/docs`](http://localhost:3000/docs) | Documentação interativa — decisões técnicas, guia de configuração e playground de requisições |
 | [`http://localhost:3000/swagger`](http://localhost:3000/swagger) | Swagger UI — especificação OpenAPI 3.0 com schemas, exemplos e try-it-out |
-| `docs/postman-collection.json` | Collection para Postman (importe via _File → Import_) |
-| `docs/insomnia-collection.json` | Collection para Insomnia (importe via _File → Import_) |
+| `docs/postman-collection.json` | Collection para Postman (importe via _File → Import_) — use base URL local ou produção |
+| `docs/insomnia-collection.json` | Collection para Insomnia (importe via _File → Import_) — ambientes Local e Produção |
 
 ---
 
@@ -67,8 +69,9 @@ cp .env.example .env
 # 2. Subir toda a stack (PostgreSQL + API)
 docker compose up --build
 
-# 3. Verificar saúde
+# 3. Verificar saúde (local)
 curl http://localhost:3000/health
+# Produção: curl https://energy-ledger.up.railway.app/health
 ```
 
 As migrations do Prisma são aplicadas automaticamente no startup da API.
@@ -207,7 +210,7 @@ curl "http://localhost:3000/api/v1/dashboard/financial"
 curl "http://localhost:3000/api/v1/dashboard/financial?customer_number=7202210726"
 ```
 
-> Para exemplos completos de request/response, incluindo cenários de erro, acesse [`/docs`](http://localhost:3000/docs) ou [`/swagger`](http://localhost:3000/swagger).
+> Para exemplos completos de request/response, incluindo cenários de erro, acesse [`/docs`](https://energy-ledger.up.railway.app/docs) ou [`/swagger`](https://energy-ledger.up.railway.app/swagger) (produção), ou use `http://localhost:3000` ao rodar localmente.
 
 ---
 

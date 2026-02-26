@@ -2,15 +2,15 @@
   "info": {
     "name": "EnergyLedger – Energy Invoice API",
     "_postman_id": "energy-ledger-api-v1",
-    "description": "RESTful API for processing energy invoices via Google Gemini LLM.\n\nDocumentation: http://localhost:3000/docs\nSwagger UI: http://localhost:3000/swagger",
+    "description": "RESTful API for processing energy invoices via Google Gemini LLM.\n\nProduction: https://energy-ledger.up.railway.app\nDocs: https://energy-ledger.up.railway.app/docs\nSwagger: https://energy-ledger.up.railway.app/swagger\n\nLocal: set base_url to http://localhost:3000",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:3000",
+      "value": "https://energy-ledger.up.railway.app",
       "type": "string",
-      "description": "Base URL of the API server"
+      "description": "Base URL (production). Use http://localhost:3000 for local."
     },
     {
       "key": "customer_number",

@@ -8,21 +8,31 @@
       "_id": "wrk_energy_ledger",
       "_type": "workspace",
       "name": "EnergyLedger – Energy Invoice API",
-      "description": "RESTful API for processing energy invoices via Google Gemini LLM",
+      "description": "RESTful API for processing energy invoices via Google Gemini LLM. Production: https://energy-ledger.up.railway.app",
       "scope": "collection"
     },
     {
       "_id": "env_energy_ledger_base",
       "_type": "environment",
       "parentId": "wrk_energy_ledger",
-      "name": "Base Environment",
+      "name": "Local",
       "data": {
         "base_url": "http://localhost:3000",
         "customer_number": "7202210726",
         "reference_month": "SET/2024"
       }
     },
-
+    {
+      "_id": "env_energy_ledger_production",
+      "_type": "environment",
+      "parentId": "wrk_energy_ledger",
+      "name": "Production (Railway)",
+      "data": {
+        "base_url": "https://energy-ledger.up.railway.app",
+        "customer_number": "7202210726",
+        "reference_month": "SET/2024"
+      }
+    },
     {
       "_id": "fld_health",
       "_type": "request_group",

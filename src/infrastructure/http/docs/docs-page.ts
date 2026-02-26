@@ -778,7 +778,7 @@ export const docsHtml = `<!DOCTYPE html>
     <h2 class="section-title">Quick Start</h2>
     <p class="section-lead">
       Fluxo completo de uso da API do zero até os dashboards, em 4 comandos.
-      Certifique-se de que o servidor está rodando antes de executar.
+      Em produção use a base URL <code>https://energy-ledger.up.railway.app</code>; localmente use <code>http://localhost:3000</code>.
     </p>
 
     <div class="steps">
@@ -786,7 +786,7 @@ export const docsHtml = `<!DOCTYPE html>
         <div class="step-num">1</div>
         <div class="step-body">
           <div class="step-title">Fazer upload de uma fatura PDF</div>
-          <div class="code-block"><pre><span class="cmd">curl -X POST http://localhost:3000/api/v1/invoices/upload \
+          <div class="code-block"><pre><span class="cmd">curl -X POST https://energy-ledger.up.railway.app/api/v1/invoices/upload \
   -F "invoice=@fatura-set-2024.pdf"</span>
 
 <span class="comment"># O campo do arquivo DEVE se chamar "invoice"
@@ -798,7 +798,7 @@ export const docsHtml = `<!DOCTYPE html>
         <div class="step-num">2</div>
         <div class="step-body">
           <div class="step-title">Listar todas as faturas do cliente</div>
-          <div class="code-block"><pre><span class="cmd">curl "http://localhost:3000/api/v1/invoices?customer_number=7202210726"</span>
+          <div class="code-block"><pre><span class="cmd">curl "https://energy-ledger.up.railway.app/api/v1/invoices?customer_number=7202210726"</span>
 
 <span class="comment"># Retorna lista paginada. Use &amp;page=2&amp;limit=10 para paginar
 # Sem filtros retorna todas as faturas de todos os clientes</span></pre></div>
@@ -808,7 +808,7 @@ export const docsHtml = `<!DOCTYPE html>
         <div class="step-num">3</div>
         <div class="step-body">
           <div class="step-title">Consultar dashboard de energia (kWh)</div>
-          <div class="code-block"><pre><span class="cmd">curl "http://localhost:3000/api/v1/dashboard/energy?customer_number=7202210726"</span>
+          <div class="code-block"><pre><span class="cmd">curl "https://energy-ledger.up.railway.app/api/v1/dashboard/energy?customer_number=7202210726"</span>
 
 <span class="comment"># Retorna consumo e energia compensada agrupados por mês de referência
 # Omita customer_number para agregar todos os clientes</span></pre></div>
@@ -818,7 +818,7 @@ export const docsHtml = `<!DOCTYPE html>
         <div class="step-num">4</div>
         <div class="step-body">
           <div class="step-title">Consultar dashboard financeiro (R$)</div>
-          <div class="code-block"><pre><span class="cmd">curl "http://localhost:3000/api/v1/dashboard/financial?customer_number=7202210726"</span>
+          <div class="code-block"><pre><span class="cmd">curl "https://energy-ledger.up.railway.app/api/v1/dashboard/financial?customer_number=7202210726"</span>
 
 <span class="comment"># Retorna valor total sem GD e economia com GD por mês de referência
 # gdSavings é sempre negativo — representa crédito (economia) para o cliente</span></pre></div>
@@ -965,7 +965,8 @@ export const docsHtml = `<!DOCTYPE html>
         <div class="step-body">
           <div class="step-title">Verificar se o stack está saudável</div>
           <div class="code-block"><pre><span class="cmd">curl http://localhost:3000/health</span>
-<span class="str"># {"status":"ok"}</span></pre></div>
+<span class="str"># {"status":"ok"}</span>
+<span class="comment"># Produção: curl https://energy-ledger.up.railway.app/health</span></pre></div>
         </div>
       </div>
     </div>
@@ -1000,7 +1001,7 @@ export const docsHtml = `<!DOCTYPE html>
           <div class="step-title">Iniciar em modo desenvolvimento (hot reload)</div>
           <div class="code-block"><pre><span class="cmd">npm run dev</span>
 
-<span class="comment"># Servidor rodando em http://localhost:3000</span></pre></div>
+<span class="comment"># Servidor rodando em http://localhost:3000 (produção: https://energy-ledger.up.railway.app)</span></pre></div>
         </div>
       </div>
     </div>
