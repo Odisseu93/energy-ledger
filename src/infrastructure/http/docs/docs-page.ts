@@ -1912,7 +1912,7 @@ export const docsHtml = `<!DOCTYPE html>
   "success": false,
   "error": {
     "code": "ValidationError",
-    "message": "Invalid query parameters: {\"customer_number\":[\"Expected string, received array\"]}"
+    "message": "Invalid query parameters: {"customer_number":["Expected string, received array"]}"
   }
 }</div>
               <div class="resp-example-schema">
@@ -2082,7 +2082,7 @@ export const docsHtml = `<!DOCTYPE html>
   "success": false,
   "error": {
     "code": "ValidationError",
-    "message": "Invalid query parameters: {\"customer_number\":[\"Expected string, received array\"]}"
+    "message": "Invalid query parameters: {"customer_number":["Expected string, received array"]}"
   }
 }</div>
               <div class="resp-example-schema">
