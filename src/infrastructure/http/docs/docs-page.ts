@@ -566,8 +566,30 @@ export const docsHtml = `<!DOCTYPE html>
     .resp-example-arrow.open { transform: rotate(90deg); }
     .resp-example-status { font-weight: 800; font-size: 13px; }
     .resp-example-desc { font-size: 12px; opacity: 0.8; }
+    .resp-example-content { display: none; border-top: 1px solid var(--border); }
+    .resp-example-content.open { display: block; }
+    .resp-example-tabs {
+      display: flex;
+      gap: 0;
+      background: #f1f5f9;
+      border-bottom: 1px solid var(--border);
+      padding: 0 14px 0 0;
+    }
+    .resp-example-tab {
+      padding: 8px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .resp-example-tab:hover { color: var(--text); }
+    .resp-example-tab.active { font-weight: 600; color: var(--primary); border-bottom-color: var(--primary); }
+    .resp-example-content.tab-value .resp-example-body { display: block; }
+    .resp-example-content.tab-value .resp-example-schema { display: none; }
+    .resp-example-content.tab-schema .resp-example-body { display: none; }
+    .resp-example-content.tab-schema .resp-example-schema { display: block; }
     .resp-example-body {
-      display: none;
       background: var(--code-bg);
       color: var(--code-text);
       font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
@@ -578,7 +600,18 @@ export const docsHtml = `<!DOCTYPE html>
       word-break: break-all;
       border-top: 1px solid #1e293b;
     }
-    .resp-example-body.open { display: block; }
+    .resp-example-schema {
+      background: var(--card);
+      padding: 14px 18px;
+      font-size: 12px;
+      line-height: 1.6;
+      border-top: 1px solid var(--border);
+    }
+    .resp-example-schema table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .resp-example-schema th, .resp-example-schema td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .resp-example-schema th { font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+    .resp-example-schema .schema-name { font-family: 'SF Mono', 'Fira Code', monospace; color: var(--primary); font-weight: 500; }
+    .resp-example-schema .schema-type { font-family: monospace; color: #64748b; font-size: 11px; }
 
     /* ===== PARAM TABLE ===== */
     .param-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px; }
@@ -1287,8 +1320,8 @@ export const docsHtml = `<!DOCTYPE html>
           <tr>
             <td><code>ValidationError</code></td>
             <td><span class="badge" style="background:#fef3c7; color:#92400e; font-size:11px;">400</span></td>
-            <td>Arquivo ausente, tipo inválido (não PDF), query params com tipo errado (ex: <code>page</code> não inteiro).</td>
-            <td>Upload, Listar Faturas</td>
+            <td>Arquivo ausente, tipo inválido (não PDF), query params com tipo errado (ex: <code>page</code> não inteiro, <code>customer_number</code> não string).</td>
+            <td>Upload, Listar Faturas, Dashboard Energia, Dashboard Financeiro</td>
           </tr>
           <tr>
             <td><code>ValidationError</code></td>
@@ -1366,9 +1399,20 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">200</span>
               <span class="resp-example-desc">OK — servidor operacional</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "status": "ok"
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">status</td><td class="schema-type">string</td><td>Sempre <code>"ok"</code> quando o servidor está operacional.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1414,7 +1458,12 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">201</span>
               <span class="resp-example-desc">Created — fatura processada e salva com sucesso</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": true,
   "data": {
     "id": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
@@ -1435,6 +1484,20 @@ export const docsHtml = `<!DOCTYPE html>
     "processedAt": "2024-09-15T14:23:00.000Z"
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>true</code> em caso de sucesso.</td></tr>
+                  <tr><td class="schema-name">data</td><td class="schema-type">object (Invoice)</td><td>Fatura criada ou atualizada.</td></tr>
+                  <tr><td class="schema-name">data.id</td><td class="schema-type">string (uuid)</td><td>ID da fatura (Invoice).</td></tr>
+                  <tr><td class="schema-name">data.customerNumber</td><td class="schema-type">string</td><td>Número do cliente conforme o PDF.</td></tr>
+                  <tr><td class="schema-name">data.referenceMonth</td><td class="schema-type">string</td><td>Formato <code>MMM/YYYY</code> (ex.: SET/2024).</td></tr>
+                  <tr><td class="schema-name">data.energyConsumptionKwh</td><td class="schema-type">number</td><td>electricEnergyKwh + sceeeEnergyKwh.</td></tr>
+                  <tr><td class="schema-name">data.totalValueWithoutGd</td><td class="schema-type">number</td><td>Valor total em R$ sem o desconto de GD.</td></tr>
+                  <tr><td class="schema-name">data.gdSavings</td><td class="schema-type">number</td><td>Crédito de GD (valor negativo).</td></tr>
+                  <tr><td class="schema-name">data.processedAt</td><td class="schema-type">string (date-time)</td><td>Data/hora em ISO 8601 UTC.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
           <div class="resp-example">
             <div class="resp-example-header resp-ex-4xx" onclick="toggleExample(this)">
@@ -1442,13 +1505,27 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">400</span>
               <span class="resp-example-desc">Bad Request — nenhum arquivo enviado ou formato inválido</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": false,
   "error": {
     "code": "ValidationError",
     "message": "PDF file is required"
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code> em caso de erro.</td></tr>
+                  <tr><td class="schema-name">error</td><td class="schema-type">object</td><td>Detalhes do erro.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>ValidationError, LLMParseError, LLMError, NotFoundError, InternalError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Mensagem legível.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
           <div class="resp-example">
             <div class="resp-example-header resp-ex-4xx" onclick="toggleExample(this)">
@@ -1456,13 +1533,26 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">413</span>
               <span class="resp-example-desc">Payload Too Large — arquivo acima do limite configurado</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": false,
   "error": {
     "code": "ValidationError",
     "message": "File too large. Maximum size is 10 MB"
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>ValidationError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Mensagem de limite de tamanho.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
           <div class="resp-example">
             <div class="resp-example-header resp-ex-4xx" onclick="toggleExample(this)">
@@ -1470,13 +1560,26 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">422</span>
               <span class="resp-example-desc">Unprocessable Entity — LLM não conseguiu extrair dados do PDF</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": false,
   "error": {
     "code": "LLMParseError",
     "message": "LLM returned an invalid response: field 'customerNumber' is required"
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>LLMParseError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Mensagem de falha no parse.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
           <div class="resp-example">
             <div class="resp-example-header resp-ex-5xx" onclick="toggleExample(this)">
@@ -1484,13 +1587,53 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">502</span>
               <span class="resp-example-desc">Bad Gateway — falha na API do Gemini após 3 tentativas</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": false,
   "error": {
     "code": "LLMError",
     "message": "Gemini API failed after 3 attempts: You exceeded your current quota"
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>LLMError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Mensagem de falha da API.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+          <div class="resp-example">
+            <div class="resp-example-header resp-ex-5xx" onclick="toggleExample(this)">
+              <span class="resp-example-arrow">&#9654;</span>
+              <span class="resp-example-status">500</span>
+              <span class="resp-example-desc">Internal Server Error — erro inesperado (ex.: falha de banco)</span>
+            </div>
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
+  "success": false,
+  "error": {
+    "code": "InternalServerError",
+    "message": "An unexpected error occurred"
+  }
+}</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>InternalServerError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Em produção, mensagem genérica; em dev pode incluir detalhes.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1543,7 +1686,12 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">200</span>
               <span class="resp-example-desc">OK — lista paginada de faturas</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": true,
   "data": [
     {
@@ -1569,6 +1717,16 @@ export const docsHtml = `<!DOCTYPE html>
   "page": 1,
   "limit": 20
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>true</code>.</td></tr>
+                  <tr><td class="schema-name">data</td><td class="schema-type">array (Invoice)</td><td>Lista de faturas da página atual.</td></tr>
+                  <tr><td class="schema-name">total</td><td class="schema-type">integer</td><td>Total de faturas que atendem aos filtros.</td></tr>
+                  <tr><td class="schema-name">page</td><td class="schema-type">integer</td><td>Página atual (base 1).</td></tr>
+                  <tr><td class="schema-name">limit</td><td class="schema-type">integer</td><td>Tamanho da página.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
           <div class="resp-example">
             <div class="resp-example-header resp-ex-4xx" onclick="toggleExample(this)">
@@ -1576,13 +1734,53 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">400</span>
               <span class="resp-example-desc">Bad Request — query params inválidos</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": false,
   "error": {
     "code": "ValidationError",
     "message": "Invalid query parameter: 'page' must be a positive integer"
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>ValidationError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Mensagem de validação.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+          <div class="resp-example">
+            <div class="resp-example-header resp-ex-5xx" onclick="toggleExample(this)">
+              <span class="resp-example-arrow">&#9654;</span>
+              <span class="resp-example-status">500</span>
+              <span class="resp-example-desc">Internal Server Error — erro inesperado (ex.: falha de banco)</span>
+            </div>
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
+  "success": false,
+  "error": {
+    "code": "InternalServerError",
+    "message": "An unexpected error occurred"
+  }
+}</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>InternalServerError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Em produção, mensagem genérica; em dev pode incluir detalhes.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1618,7 +1816,12 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">200</span>
               <span class="resp-example-desc">OK — consumo de energia agrupado por mês</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": true,
   "data": {
     "customerNumber": "7202210726",
@@ -1641,6 +1844,17 @@ export const docsHtml = `<!DOCTYPE html>
     ]
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>true</code>.</td></tr>
+                  <tr><td class="schema-name">data.customerNumber</td><td class="schema-type">string | null</td><td>Número do cliente quando filtrado; <code>null</code> quando agregado.</td></tr>
+                  <tr><td class="schema-name">data.data</td><td class="schema-type">array</td><td>Um item por mês de referência.</td></tr>
+                  <tr><td class="schema-name">data.data[].referenceMonth</td><td class="schema-type">string</td><td>Formato <code>MMM/YYYY</code>.</td></tr>
+                  <tr><td class="schema-name">data.data[].energyConsumptionKwh</td><td class="schema-type">number</td><td>Consumo total (kWh) no mês.</td></tr>
+                  <tr><td class="schema-name">data.data[].compensatedEnergyKwh</td><td class="schema-type">number</td><td>Energia compensada GD (kWh) no mês.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
           <div class="resp-example">
             <div class="resp-example-header resp-ex-2xx" onclick="toggleExample(this)">
@@ -1648,7 +1862,12 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">200</span>
               <span class="resp-example-desc">OK — sem customer_number (todos os clientes agregados)</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": true,
   "data": {
     "customerNumber": null,
@@ -1666,6 +1885,71 @@ export const docsHtml = `<!DOCTYPE html>
     ]
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>true</code>.</td></tr>
+                  <tr><td class="schema-name">data.customerNumber</td><td class="schema-type">null</td><td>Sem filtro: todos os clientes agregados.</td></tr>
+                  <tr><td class="schema-name">data.data</td><td class="schema-type">array</td><td>Um item por mês de referência.</td></tr>
+                  <tr><td class="schema-name">data.data[].referenceMonth</td><td class="schema-type">string</td><td>Formato <code>MMM/YYYY</code>.</td></tr>
+                  <tr><td class="schema-name">data.data[].energyConsumptionKwh</td><td class="schema-type">number</td><td>Consumo total (kWh).</td></tr>
+                  <tr><td class="schema-name">data.data[].compensatedEnergyKwh</td><td class="schema-type">number</td><td>Energia compensada (kWh).</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+          <div class="resp-example">
+            <div class="resp-example-header resp-ex-4xx" onclick="toggleExample(this)">
+              <span class="resp-example-arrow">&#9654;</span>
+              <span class="resp-example-status">400</span>
+              <span class="resp-example-desc">Bad Request — query params inválidos (ex.: customer_number com tipo incorreto)</span>
+            </div>
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
+  "success": false,
+  "error": {
+    "code": "ValidationError",
+    "message": "Invalid query parameters: {\"customer_number\":[\"Expected string, received array\"]}"
+  }
+}</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>ValidationError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Detalhes da validação Zod (query params).</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+          <div class="resp-example">
+            <div class="resp-example-header resp-ex-5xx" onclick="toggleExample(this)">
+              <span class="resp-example-arrow">&#9654;</span>
+              <span class="resp-example-status">500</span>
+              <span class="resp-example-desc">Internal Server Error — erro inesperado (ex.: falha de banco)</span>
+            </div>
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
+  "success": false,
+  "error": {
+    "code": "InternalServerError",
+    "message": "An unexpected error occurred"
+  }
+}</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>InternalServerError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Em produção, mensagem genérica; em dev pode incluir detalhes.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1702,7 +1986,12 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">200</span>
               <span class="resp-example-desc">OK — valores financeiros agrupados por mês</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": true,
   "data": {
     "customerNumber": "7202210726",
@@ -1725,6 +2014,17 @@ export const docsHtml = `<!DOCTYPE html>
     ]
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>true</code>.</td></tr>
+                  <tr><td class="schema-name">data.customerNumber</td><td class="schema-type">string | null</td><td>Número do cliente quando filtrado; <code>null</code> quando agregado.</td></tr>
+                  <tr><td class="schema-name">data.data</td><td class="schema-type">array</td><td>Um item por mês de referência.</td></tr>
+                  <tr><td class="schema-name">data.data[].referenceMonth</td><td class="schema-type">string</td><td>Formato <code>MMM/YYYY</code>.</td></tr>
+                  <tr><td class="schema-name">data.data[].totalValueWithoutGd</td><td class="schema-type">number</td><td>Valor total em R$ sem o desconto de GD.</td></tr>
+                  <tr><td class="schema-name">data.data[].gdSavings</td><td class="schema-type">number</td><td>Economia GD (negativo = crédito para o cliente).</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
           <div class="resp-example">
             <div class="resp-example-header resp-ex-2xx" onclick="toggleExample(this)">
@@ -1732,7 +2032,12 @@ export const docsHtml = `<!DOCTYPE html>
               <span class="resp-example-status">200</span>
               <span class="resp-example-desc">OK — sem customer_number (todos os clientes agregados)</span>
             </div>
-            <div class="resp-example-body">{
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
   "success": true,
   "data": {
     "customerNumber": null,
@@ -1750,6 +2055,71 @@ export const docsHtml = `<!DOCTYPE html>
     ]
   }
 }</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>true</code>.</td></tr>
+                  <tr><td class="schema-name">data.customerNumber</td><td class="schema-type">null</td><td>Sem filtro: todos os clientes agregados.</td></tr>
+                  <tr><td class="schema-name">data.data</td><td class="schema-type">array</td><td>Um item por mês de referência.</td></tr>
+                  <tr><td class="schema-name">data.data[].referenceMonth</td><td class="schema-type">string</td><td>Formato <code>MMM/YYYY</code>.</td></tr>
+                  <tr><td class="schema-name">data.data[].totalValueWithoutGd</td><td class="schema-type">number</td><td>Valor total em R$.</td></tr>
+                  <tr><td class="schema-name">data.data[].gdSavings</td><td class="schema-type">number</td><td>Economia GD (negativo).</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+          <div class="resp-example">
+            <div class="resp-example-header resp-ex-4xx" onclick="toggleExample(this)">
+              <span class="resp-example-arrow">&#9654;</span>
+              <span class="resp-example-status">400</span>
+              <span class="resp-example-desc">Bad Request — query params inválidos (ex.: customer_number com tipo incorreto)</span>
+            </div>
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
+  "success": false,
+  "error": {
+    "code": "ValidationError",
+    "message": "Invalid query parameters: {\"customer_number\":[\"Expected string, received array\"]}"
+  }
+}</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>ValidationError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Detalhes da validação Zod (query params).</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
+          <div class="resp-example">
+            <div class="resp-example-header resp-ex-5xx" onclick="toggleExample(this)">
+              <span class="resp-example-arrow">&#9654;</span>
+              <span class="resp-example-status">500</span>
+              <span class="resp-example-desc">Internal Server Error — erro inesperado (ex.: falha de banco)</span>
+            </div>
+            <div class="resp-example-content tab-value">
+              <div class="resp-example-tabs">
+                <span class="resp-example-tab active" data-tab="value" onclick="switchRespTab(this)">Example value</span>
+                <span class="resp-example-tab" data-tab="schema" onclick="switchRespTab(this)">Schema</span>
+              </div>
+              <div class="resp-example-body">{
+  "success": false,
+  "error": {
+    "code": "InternalServerError",
+    "message": "An unexpected error occurred"
+  }
+}</div>
+              <div class="resp-example-schema">
+                <table><thead><tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr></thead><tbody>
+                  <tr><td class="schema-name">success</td><td class="schema-type">boolean</td><td>Sempre <code>false</code>.</td></tr>
+                  <tr><td class="schema-name">error.code</td><td class="schema-type">string</td><td>InternalServerError.</td></tr>
+                  <tr><td class="schema-name">error.message</td><td class="schema-type">string</td><td>Em produção, mensagem genérica; em dev pode incluir detalhes.</td></tr>
+                </tbody></table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1773,10 +2143,20 @@ export const docsHtml = `<!DOCTYPE html>
 
   // ---- Response example toggle ----
   function toggleExample(header) {
-    var body = header.nextElementSibling;
+    var content = header.nextElementSibling;
     var arrow = header.querySelector('.resp-example-arrow');
-    var isOpen = body.classList.toggle('open');
+    var isOpen = content.classList.toggle('open');
     if (arrow) arrow.classList.toggle('open', isOpen);
+  }
+
+  function switchRespTab(tabEl) {
+    var tab = tabEl.dataset.tab;
+    var content = tabEl.closest('.resp-example-content');
+    if (!content) return;
+    content.querySelectorAll('.resp-example-tab').forEach(function(t) { t.classList.remove('active'); });
+    tabEl.classList.add('active');
+    content.classList.remove('tab-value', 'tab-schema');
+    content.classList.add('tab-' + tab);
   }
 
   // ---- JSON syntax highlight ----
