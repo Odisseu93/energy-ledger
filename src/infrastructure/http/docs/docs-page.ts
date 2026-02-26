@@ -2331,8 +2331,11 @@ export const docsHtml = `<!DOCTYPE html>
   setActiveFromHash();
 
   var observer = new IntersectionObserver(function(entries) {
+    var hashId = location.hash.slice(1);
     entries.forEach(function(entry) {
-      if (entry.isIntersecting) setActiveNav(entry.target.id);
+      if (!entry.isIntersecting) return;
+      if (hashId && entry.target.id !== hashId) return;
+      setActiveNav(entry.target.id);
     });
   }, { threshold: 0.2, rootMargin: '-10% 0px -60% 0px' });
 
