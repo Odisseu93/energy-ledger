@@ -1931,17 +1931,28 @@ export const docsHtml = `<!DOCTYPE html>
     el.innerHTML = highlightJson(raw);
   });
 
-  // ---- Active nav on scroll ----
+  // ---- Active nav: sync with hash (click) and with scroll ----
   var allSections = document.querySelectorAll('.doc-section[id], .endpoint-card[id]');
   var allNavItems = document.querySelectorAll('.nav-item');
 
+  function setActiveNav(id) {
+    if (!id) return;
+    allNavItems.forEach(function(item) { item.classList.remove('active'); });
+    var link = document.querySelector('.nav-item[href="#' + id + '"]');
+    if (link) link.classList.add('active');
+  }
+
+  function setActiveFromHash() {
+    var id = location.hash.slice(1);
+    setActiveNav(id);
+  }
+
+  window.addEventListener('hashchange', setActiveFromHash);
+  setActiveFromHash();
+
   var observer = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        allNavItems.forEach(function(item) { item.classList.remove('active'); });
-        var link = document.querySelector('.nav-item[href="#' + entry.target.id + '"]');
-        if (link) link.classList.add('active');
-      }
+      if (entry.isIntersecting) setActiveNav(entry.target.id);
     });
   }, { threshold: 0.2, rootMargin: '-10% 0px -60% 0px' });
 
