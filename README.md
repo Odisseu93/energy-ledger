@@ -263,3 +263,6 @@ src/
 ├── app.ts                      # Express app bootstrap
 └── server.ts                   # Listen + graceful shutdown
 ```
+
+## Licença
+[MIT](LICENSE)
